@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -44,4 +45,36 @@ public class ResourceExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erroPadrao);
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<StandardError> manipuladorDeDadoIncorreto(HttpMessageNotReadableException e, HttpServletRequest request) {
+
+        StandardError erroPadrao = new StandardError();
+
+        erroPadrao.setTimestamp(Instant.now());
+        erroPadrao.setStatus(HttpStatus.BAD_REQUEST.value()); // HTTP 400
+        erroPadrao.setError("Formato de Dado Inválido");
+        erroPadrao.setMessage("Verifique se você preencheu os números e datas no formato correto.");
+        erroPadrao.setPath(request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erroPadrao);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<StandardError> manipuladorDeRegraDeNegocio(IllegalArgumentException e, HttpServletRequest request) {
+
+        StandardError erroPadrao = new StandardError();
+
+        erroPadrao.setTimestamp(Instant.now());
+        erroPadrao.setStatus(HttpStatus.BAD_REQUEST.value()); // HTTP 400
+        erroPadrao.setError("Regra de Negócio Violada");
+
+        // Truque Mágico: Pega a exata mensagem que você escreveu lá no Service!
+        erroPadrao.setMessage(e.getMessage());
+
+        erroPadrao.setPath(request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erroPadrao);
+    }
+
 }
