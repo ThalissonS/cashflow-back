@@ -1,6 +1,6 @@
 # Etapa 1: Prepara o terreno com Maven e Java 21 para compilar o código
 FROM maven:3.9.6-eclipse-temurin-21-jammy AS build
-COPY . /app
+COPY src /app
 WORKDIR /app
 # Roda o comando para gerar o .jar ignorando os testes
 RUN mvn clean package -DskipTests
