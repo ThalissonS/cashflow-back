@@ -5,9 +5,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.time.Instant;
 
@@ -66,15 +68,40 @@ public class ResourceExceptionHandler {
         StandardError erroPadrao = new StandardError();
 
         erroPadrao.setTimestamp(Instant.now());
-        erroPadrao.setStatus(HttpStatus.BAD_REQUEST.value()); // HTTP 400
+        erroPadrao.setStatus(HttpStatus.BAD_REQUEST.value());
         erroPadrao.setError("Regra de Negócio Violada");
-
-        // Truque Mágico: Pega a exata mensagem que você escreveu lá no Service!
         erroPadrao.setMessage(e.getMessage());
-
         erroPadrao.setPath(request.getRequestURI());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erroPadrao);
+    }
+
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<StandardError> manipuladorDeContaPendente(DisabledException e, HttpServletRequest request) {
+
+        StandardError erroPadrao = new StandardError();
+
+        erroPadrao.setTimestamp(Instant.now());
+        erroPadrao.setStatus(HttpStatus.FORBIDDEN.value());
+        erroPadrao.setError("Conta Pendente");
+        erroPadrao.setMessage("Sua conta ainda não foi aprovada por um administrador.");
+        erroPadrao.setPath(request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(erroPadrao);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<StandardError> manipuladorDeCredenciaisInvalidas(BadCredentialsException e, HttpServletRequest request) {
+
+        StandardError erroPadrao = new StandardError();
+
+        erroPadrao.setTimestamp(Instant.now());
+        erroPadrao.setStatus(HttpStatus.UNAUTHORIZED.value());
+        erroPadrao.setError("Credenciais Inválidas");
+        erroPadrao.setMessage("E-mail ou senha incorretos.");
+        erroPadrao.setPath(request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(erroPadrao);
     }
 
 }

@@ -4,8 +4,9 @@ import com.thalisson.cash_flow.models.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-// @Repository avisa ao Spring que essa interface é responsável pelo acesso aos dados.
+import java.util.Optional;
+
 @Repository
 public interface UserRepository extends JpaRepository<Usuario, Long> {
-    // Aqui acontece a mágica! Não precisamos escrever código para salvar ou buscar.
+    Optional<Usuario> findByEmail(String email);
 }

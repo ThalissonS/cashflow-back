@@ -1,46 +1,36 @@
 package com.thalisson.cash_flow.services;
 
 import com.thalisson.cash_flow.models.Despesa;
+import com.thalisson.cash_flow.models.Usuario;
 import com.thalisson.cash_flow.repositories.DespesaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Service // Isso avisa ao Spring: "Eu sou o Cérebro/Gerente de Despesas"
+@Service
 public class DespesaService {
 
-    @Autowired
-    private DespesaRepository despesaRepository; // Chamamos o arquivista
+    private final DespesaRepository despesaRepository;
 
-    // Nosso método principal
-    public Despesa salvarDespesa(Despesa despesa) {
+    public DespesaService(DespesaRepository despesaRepository) {
+        this.despesaRepository = despesaRepository;
+    }
 
-        // REGRA DE NEGÓCIO 1: O valor não pode ser menor ou igual a zero
+    public Despesa salvarDespesa(Despesa despesa, Usuario usuario) {
         if (despesa.getValor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("O valor da despesa deve ser maior que zero!");
         }
-
-        // Se passou pelo if acima sem estourar o erro, mandamos salvar no banco!
+        despesa.setUsuario(usuario);
         return despesaRepository.save(despesa);
     }
 
-    public List<Despesa> listarTodas() {
-        return despesaRepository.findAll();
+    public List<Despesa> listarTodas(Long usuarioId) {
+        return despesaRepository.findAllByUsuarioId(usuarioId);
     }
 
-
-    public BigDecimal obterTotalGasto() {
-        BigDecimal total = despesaRepository.calcularTotalDespesas();
-
-        // Se vier nulo do banco (não tem despesas), devolvemos ZERO.
-        if (total == null) {
-            return BigDecimal.ZERO;
-        }
-
-        return total;
+    public BigDecimal obterTotalGasto(Long usuarioId) {
+        BigDecimal total = despesaRepository.calcularTotalDespesasByUsuarioId(usuarioId);
+        return total == null ? BigDecimal.ZERO : total;
     }
-
-    
 }

@@ -6,10 +6,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Repository
 public interface DespesaRepository extends JpaRepository<Despesa, Long> {
-    @Query("SELECT SUM(d.valor) FROM Despesa d")
-    BigDecimal calcularTotalDespesas();
-}
 
+    List<Despesa> findAllByUsuarioId(Long usuarioId);
+
+    @Query("SELECT SUM(d.valor) FROM Despesa d WHERE d.usuario.id = :usuarioId")
+    BigDecimal calcularTotalDespesasByUsuarioId(Long usuarioId);
+}
