@@ -26,8 +26,6 @@ public class DespesaController {
     }
 
     @GetMapping("/total")
-    public BigDecimal obterTotal() {
-        return despesaService.obterTotalGasto();
-    }
+    public BigDecimal obterTotal() { return despesaService.obterTotalGasto(); }
 
 }
