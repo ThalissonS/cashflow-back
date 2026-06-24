@@ -15,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/auth")
@@ -58,5 +59,15 @@ public class AuthController {
         Usuario usuario = (Usuario) auth.getPrincipal();
         String token = jwtUtil.gerarToken(usuario.getEmail());
         return new AuthResponse(token, usuario.getNome(), usuario.getPapel().name());
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse refresh(Authentication authentication) {
+        if (authentication == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        String novoToken = jwtUtil.gerarToken(usuario.getEmail());
+        return new AuthResponse(novoToken, usuario.getNome(), usuario.getPapel().name());
     }
 }
